@@ -1,9 +1,11 @@
 package org.example;
 
+import com.vladmihalcea.hibernate.type.json.JsonBinaryType;
 import org.example.converter.BirthdayConverter;
 import org.example.entity.Birthday;
 import org.example.entity.Role;
 import org.example.entity.UserEntity;
+import org.example.util.HibernateUtil;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.boot.model.naming.CamelCaseToUnderscoresNamingStrategy;
@@ -19,36 +21,44 @@ public class HibernateRunner {
 
     public static void main(String[] args) throws SQLException {
 
-//        BlockingQueue<Connection> pool = null;
-//        Connection connection = pool.take();
-//        SessionFactory
+        UserEntity user = UserEntity.builder()
+                .username("ivan@gmail.com")
+                .lastname("Ivanov")
+                .firstname("Ivan")
+                .build();
 
-//        Connection connection = DriverManager
-//                .getConnection("db.url", "db.username", "db.password");
-//        Session
+        try (SessionFactory sessionFactory = HibernateUtil.buildSessionFactory()) {
+            try (Session session1 = sessionFactory.openSession()) {
+                session1.beginTransaction();
 
-        Configuration configuration = new Configuration();
-//        configuration.addAnnotatedClass(UserEntity.class);
-//        configuration.setPhysicalNamingStrategy(new CamelCaseToUnderscoresNamingStrategy());
-        configuration.addAttributeConverter(new BirthdayConverter());
-        configuration.configure();
+                session1.saveOrUpdate(user);
 
-        try (SessionFactory sessionFactory = configuration.buildSessionFactory();
-             Session session = sessionFactory.openSession()) {
+                session1.getTransaction().commit();
+            }
+            try (Session session2 = sessionFactory.openSession()) {
+                session2.beginTransaction();
 
-            session.beginTransaction();
+                user.setFirstname("Sveta");
 
-            UserEntity user = UserEntity.builder()
-                    .username("ivan1@gmail.com")
-                    .firstname("Ivan")
-                    .lastname("Ivanov")
-                    .birthDate(new Birthday(LocalDate.of(2000,1,19)))
-                    .role(Role.ADMIN)
-                    .build();
+//                session2.refresh(user);
+//
+////                UserEntity freshUser = session2.get(UserEntity.class, user.getUsername());
+////                user.setFirstname(freshUser.getFirstname());
+////                user.setLastname(freshUser.getLastname());
+//
+////                **how work refresh**
 
-            session.save(user);
+                Object mergeUser = session2.merge(user);
 
-            session.getTransaction().commit();
+//                UserEntity freshUser = session2.get(UserEntity.class, user.getUsername());
+//                freshUser.setFirstname(user.getFirstname());
+//                freshUser.setLastname(user.getLastname());
+
+//                **how work merge**
+
+
+                session2.getTransaction().commit();
+            }
         }
     }
 }
