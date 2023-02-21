@@ -1,10 +1,13 @@
 package org.example.entity;
 
+import com.vladmihalcea.hibernate.type.json.JsonBinaryType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.example.converter.BirthdayConverter;
+import org.hibernate.annotations.Type;
+import org.hibernate.annotations.TypeDef;
 
 import javax.persistence.Column;
 import javax.persistence.Convert;
@@ -21,6 +24,7 @@ import java.time.LocalDate;
 @Builder
 @Entity
 @Table(name="users", schema = "public")
+@TypeDef(name = "dmdev", typeClass = JsonBinaryType.class)
 public class UserEntity {
 
     @Id
@@ -31,6 +35,9 @@ public class UserEntity {
 //    @Convert(converter = BirthdayConverter.class)
     @Column(name = "birth_date")
     private Birthday birthDate;
+
+    @Type(type = "dmdev")
+    private String info;
 
     @Enumerated(EnumType.STRING)
     private Role role;
