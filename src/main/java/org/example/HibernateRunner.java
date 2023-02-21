@@ -1,5 +1,6 @@
 package org.example;
 
+import org.example.entity.Role;
 import org.example.entity.UserEntity;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
@@ -35,10 +36,12 @@ public class HibernateRunner {
             session.beginTransaction();
 
             UserEntity user = UserEntity.builder()
-                    .username("ivan@gmail.com")
+                    .username("ivan21@gmail.com")
                     .firstname("Ivan")
                     .lastname("Ivanov")
                     .birthDate(LocalDate.of(2000,1,19))
+                    .age(23)
+                    .role(Role.ADMIN)
                     .build();
 
             session.save(user);
