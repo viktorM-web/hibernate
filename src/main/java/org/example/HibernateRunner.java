@@ -1,54 +1,44 @@
 package org.example;
 
-import org.example.converter.BirthdayConverter;
-import org.example.entity.Birthday;
-import org.example.entity.Role;
+import lombok.extern.slf4j.Slf4j;
+import org.example.entity.PersonalInfo;
 import org.example.entity.UserEntity;
+import org.example.util.HibernateUtil;
+
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
-import org.hibernate.boot.model.naming.CamelCaseToUnderscoresNamingStrategy;
-import org.hibernate.cfg.Configuration;
+import org.hibernate.Transaction;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.SQLException;
-import java.time.LocalDate;
-import java.util.concurrent.BlockingQueue;
 
+@Slf4j
 public class HibernateRunner {
 
     public static void main(String[] args) throws SQLException {
+        UserEntity user = UserEntity.builder()
+                .username("petr@gmail.com")
+                .personalInfo(PersonalInfo.builder()
+                        .lastname("Petrov")
+                        .firstname("Petr")
+                        .build())
+                .build();
+        log.info("User entity is in transient state, object: {}", user);
 
-//        BlockingQueue<Connection> pool = null;
-//        Connection connection = pool.take();
-//        SessionFactory
+        try (SessionFactory sessionFactory = HibernateUtil.buildSessionFactory()) {
+            Session session1 = sessionFactory.openSession();
+            try (session1) {
+                Transaction transaction = session1.beginTransaction();
+                log.trace("Transaction is created, {}", transaction);
 
-//        Connection connection = DriverManager
-//                .getConnection("db.url", "db.username", "db.password");
-//        Session
+                session1.saveOrUpdate(user);
+                log.trace("User is in persistent state: {}, session {}", user, session1);
 
-        Configuration configuration = new Configuration();
-//        configuration.addAnnotatedClass(UserEntity.class);
-//        configuration.setPhysicalNamingStrategy(new CamelCaseToUnderscoresNamingStrategy());
-        configuration.addAttributeConverter(new BirthdayConverter());
-        configuration.configure();
-
-        try (SessionFactory sessionFactory = configuration.buildSessionFactory();
-             Session session = sessionFactory.openSession()) {
-
-            session.beginTransaction();
-
-            UserEntity user = UserEntity.builder()
-                    .username("ivan1@gmail.com")
-                    .firstname("Ivan")
-                    .lastname("Ivanov")
-                    .birthDate(new Birthday(LocalDate.of(2000,1,19)))
-                    .role(Role.ADMIN)
-                    .build();
-
-            session.save(user);
-
-            session.getTransaction().commit();
+                session1.getTransaction().commit();
+            }
+            log.warn("User is in detached state: {}, session is closed {}", user, session1);
+        } catch (Exception exception) {
+            log.error("Exception occurred", exception);
+            throw exception;
         }
     }
 }
