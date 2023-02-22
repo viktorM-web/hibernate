@@ -40,9 +40,10 @@
             <artifactId>hibernate-types-52</artifactId>
             <version>2.12.1</version>
         </dependency>
+
         <dependency>
             <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
+            <artifactId>slf4j-log4j12</artifactId>
             <version>1.7.36</version>
         </dependency>
 
