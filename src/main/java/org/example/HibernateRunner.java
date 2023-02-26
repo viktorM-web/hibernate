@@ -38,6 +38,7 @@ public class HibernateRunner {
                 Transaction transaction = session1.beginTransaction();
 
                 UserEntity user1 = session1.get(UserEntity.class, 1L);
+                session1.evict(user1);
 
                 session1.getTransaction().commit();
             }
