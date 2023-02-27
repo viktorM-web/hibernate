@@ -1,7 +1,11 @@
 package org.example;
 
-import org.example.entity.Birthday;
+import lombok.Cleanup;
+import org.example.entity.Company;
 import org.example.entity.UserEntity;
+import org.example.util.HibernateUtil;
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
 import org.junit.jupiter.api.Test;
 
 import javax.persistence.Column;
@@ -13,7 +17,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.time.LocalDate;
 import java.util.Arrays;
 
 import static java.util.Optional.ofNullable;
@@ -22,6 +25,19 @@ import static java.util.stream.Collectors.joining;
 class HibernateRunnerTest {
 
     private Field[] declaredFields;
+
+    @Test
+    void oneToMany(){
+        @Cleanup SessionFactory sessionFactory = HibernateUtil.buildSessionFactory();
+        @Cleanup Session session = sessionFactory.openSession();
+        session.beginTransaction();
+
+        Company company = session.get(Company.class, 1);
+        System.out.println("");
+
+        session.getTransaction().commit();
+
+    }
 
     @Test
     void checkGetReflectionApi() throws SQLException, IllegalAccessException,
@@ -47,9 +63,6 @@ class HibernateRunnerTest {
 
         UserEntity user = UserEntity.builder()
                 .username("ivan@gmail.com")
-                .firstname("Ivan")
-                .lastname("Ivanov")
-                .birthDate(new Birthday(LocalDate.of(2000, 1, 19)))
                 .build();
 
         String sql = """
